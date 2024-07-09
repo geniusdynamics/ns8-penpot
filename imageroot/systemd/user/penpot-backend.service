@@ -20,6 +20,7 @@ ExecStart=/usr/bin/podman run --conmon-pidfile %t/penpot-backend.pid \
     --cidfile %t/penpot-backend.ctr-id --cgroups=no-conmon \
     --pod-id-file %t/penpot.pod-id --replace -d --name penpot-backend \
     --env-file=%S/state/penpot.env \
+    --env-file=%S/state/penpot-database.env \
     --volume penpot_assets:/opt/data/assets:Z \
     ${BACKEND_IMAGE}
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/penpot-backend.ctr-id -t 10
