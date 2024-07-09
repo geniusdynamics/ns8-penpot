@@ -6,7 +6,7 @@
 [Unit]
 Description=Podman penpot-exporter.service
 BindsTo=penpot.service
-After=penpot.service
+After=penpot.service postgresql-app.service redis-app.service
 
 [Service]
 Environment=PODMAN_SYSTEMD_UNIT=%n
