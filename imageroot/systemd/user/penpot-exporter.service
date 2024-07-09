@@ -1,0 +1,32 @@
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+[Unit]
+Description=Podman penpot-exporter.service
+BindsTo=penpot.service
+After=penpot.service
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+EnvironmentFile=%S/state/environment
+# EnvironmentFile=%S/state/secrets/passwords.secret
+Restart=always
+TimeoutStopSec=70
+ExecStartPre=/bin/rm -f %t/penpot-exporter.pid %t/penpot-exporter.ctr-id
+ExecStartPre=/bin/mkdir -p %S/state/restore/
+ExecStart=/usr/bin/podman run --conmon-pidfile %t/penpot-exporter.pid \
+    --cidfile %t/penpot-exporter.ctr-id --cgroups=no-conmon \
+    --pod-id-file %t/penpot.pod-id --replace -d --name penpot-exporter \
+    --env-file=%S/state/penpot.env \
+    ${EXPORTER_IMAGE}
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/penpot-exporter.ctr-id -t 10
+ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/penpot-exporter.ctr-id
+ExecReload=/usr/bin/podman kill -s HUP penpot-exporter
+SyslogIdentifier=%u
+PIDFile=%t/penpot-exporter.pid
+Type=forking
+
+[Install]
+WantedBy=default.target

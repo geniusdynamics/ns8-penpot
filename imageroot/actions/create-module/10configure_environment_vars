@@ -9,6 +9,7 @@ import json
 import sys
 import agent
 import os
+import secrets
 
 # Try to parse the stdin as JSON.
 # If parsing fails, output everything to stderr
@@ -31,8 +32,14 @@ postgres_config = {
 }
 agent.write_envfile("database.env", postgres_config)
 
+penpot_database = {
+    "PENPOT_DATABASE_URI": f"postgresql://postgresql-app/{POSTGRES_DB}",
+    "PENPOT_DATABASE_USERNAME": POSTGRES_USER,
+    "PENPOT_DATABASE_PASSWORD": POSTGRES_PASSWORD
+}
+agent.write_envfile("penpot-database.env", penpot_database)
 
-
-
+PENPOT_SECRET_KEY = secrets.token_urlsafe(64)
+agent.set_env('PENPOT_SECRET_KEY', PENPOT_SECRET_KEY)
 # just before starting systemd unit
-#agent.dump_env()
+agent.dump_env()
