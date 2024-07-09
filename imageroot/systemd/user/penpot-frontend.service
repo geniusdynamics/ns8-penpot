@@ -1,0 +1,33 @@
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+[Unit]
+Description=Podman penpot-frontend.service
+BindsTo=penpot.service
+After=penpot.service postgresql-app.service redis-app.service penpot-backend.service penpot-exporter.service
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+EnvironmentFile=%S/state/environment
+# EnvironmentFile=%S/state/secrets/passwords.secret
+Restart=always
+TimeoutStopSec=70
+ExecStartPre=/bin/rm -f %t/penpot-frontend.pid %t/penpot-frontend.ctr-id
+ExecStartPre=/bin/mkdir -p %S/state/restore/
+ExecStart=/usr/bin/podman run --conmon-pidfile %t/penpot-frontend.pid \
+    --cidfile %t/penpot-frontend.ctr-id --cgroups=no-conmon \
+    --pod-id-file %t/penpot.pod-id --replace -d --name penpot-frontend \
+    --env-file=%S/state/penpot.env \
+    --volume penpot_assets:/opt/data/assets:Z \
+    ${FRONTEND_IMAGE}
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/penpot-frontend.ctr-id -t 10
+ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/penpot-frontend.ctr-id
+ExecReload=/usr/bin/podman kill -s HUP penpot-frontend
+SyslogIdentifier=%u
+PIDFile=%t/penpot-frontend.pid
+Type=forking
+
+[Install]
+WantedBy=default.target
