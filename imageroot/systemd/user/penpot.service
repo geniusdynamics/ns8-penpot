@@ -10,8 +10,8 @@
 
 [Unit]
 Description=Podman penpot.service
-Requires=postgresql-app.service penpot-app.service
-Before=postgresql-app.service penpot-app.service
+Requires=postgresql-app.service  redis-app.service penpot-app.service
+Before=postgresql-app.service  redis-app.service penpot-app.service
 
 [Service]
 Environment=PODMAN_SYSTEMD_UNIT=%n
