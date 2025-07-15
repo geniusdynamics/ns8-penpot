@@ -14,24 +14,28 @@ import os
 # If parsing fails, output everything to stderr
 data = json.load(sys.stdin)
 
-HOST = data.get('host')
-#This is specific to you module, so you need to change it accordingly.
+HOST = data.get("host")
+# This is specific to you module, so you need to change it accordingly.
+PENPOT_SECRET_KEY = ""
 # GET PENPOT SECRET KEY FROM ENVIROMENT
-PENPOT_SECRET_KEY = os.getenv('PENPOT_SECRET_KEY')
-PENPOT_PREPL_HOST="0.0.0.0"
-PENPOT_PUBLIC_URI="https://"+HOST
-PENPOT_REDIS_URI="redis://redis-app/0"
+if os.path.exists("penpot-secret.env"):
+    dt = agent.read_envfile("penpot-secret.env")
+    PENPOT_SECRET_KEY = data.get("PENPOT_SECRET_KEY", "")
+
+PENPOT_PREPL_HOST = "0.0.0.0"
+PENPOT_PUBLIC_URI = "https://" + HOST
+PENPOT_REDIS_URI = "redis://redis-app:6379/0"
 # EMAIL SETTINGS
 rdb = agent.redis_connect(use_replica=True)
 smtp_settings = agent.get_smarthost_settings(rdb)
 
-PENPOT_SMTP_DEFAULT_FROM=smtp_settings['username']
-PENPOT_SMTP_DEFAULT_REPLY_TO=smtp_settings['username']
-PENPOT_SMTP_HOST=smtp_settings['host']
-PENPOT_SMTP_PORT=smtp_settings['port']
-PENPOT_SMTP_USERNAME=smtp_settings['username']
-PENPOT_SMTP_PASSWORD=smtp_settings['password']
-PENPOT_SMTP_TLS='true' if smtp_settings['tls_verify'] else 'false'
+PENPOT_SMTP_DEFAULT_FROM = smtp_settings["username"]
+PENPOT_SMTP_DEFAULT_REPLY_TO = smtp_settings["username"]
+PENPOT_SMTP_HOST = smtp_settings["host"]
+PENPOT_SMTP_PORT = smtp_settings["port"]
+PENPOT_SMTP_USERNAME = smtp_settings["username"]
+PENPOT_SMTP_PASSWORD = smtp_settings["password"]
+PENPOT_SMTP_TLS = "true" if smtp_settings["tls_verify"] else "false"
 
 penpot_config = {
     "PENPOT_SECRET_KEY": PENPOT_SECRET_KEY,
@@ -44,8 +48,8 @@ penpot_config = {
     "PENPOT_SMTP_PORT": PENPOT_SMTP_PORT,
     "PENPOT_SMTP_USERNAME": PENPOT_SMTP_USERNAME,
     "PENPOT_SMTP_PASSWORD": PENPOT_SMTP_PASSWORD,
-    "PENPOT_SMTP_TLS": PENPOT_SMTP_TLS
+    "PENPOT_SMTP_TLS": PENPOT_SMTP_TLS,
 }
 agent.write_envfile("penpot.env", penpot_config)
 # just before starting systemd unit
-#agent.dump_env()
+# agent.dump_env()
