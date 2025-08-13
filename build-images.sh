@@ -14,7 +14,7 @@ images=()
 repobase="${REPOBASE:-ghcr.io/geniusdynamics}"
 # Configure the image name
 reponame="penpot"
-penpot_version="2.8.0"
+penpot_version="2.8.1"
 # Create a new empty container image
 container=$(buildah from scratch)
 
