@@ -7,7 +7,7 @@
 
 set -e -o pipefail
 exec 1>&2 # Redirect any output to the journal (stderr)
-
+source database.env
 mkdir -vp restore
 cat - >restore/penpot_restore.sh <<'EOS'
 # Read dump file from standard input:
@@ -21,15 +21,17 @@ EOS
 # DB dump file. The container will be stopped at the end
 
 podman run \
-    --rm \
-    --interactive \
-    --network=none \
-    --volume=./restore:/docker-entrypoint-initdb.d/:Z \
-    --volume=postgres-data:/var/lib/postgresql/data:Z \
-    --replace --name=restore_db \
-    --env-file=database.env \
-    --env TZ=UTC \
-    "${POSTGRES_IMAGE}" < penpot.pg_dump
+	--rm \
+	--interactive \
+	--network=none \
+	--volume=./restore:/docker-entrypoint-initdb.d/:Z \
+	--volume=postgres-data:/var/lib/postgresql/data:Z \
+	--replace --name=restore_db \
+	--env POSTGRES_USER=postgres \
+	--env POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
+	--env POSTGRES_DB=penpot \
+	--env TZ=UTC \
+	"${POSTGRES_IMAGE}" <penpot.pg_dump
 
 # If the restore is successful, clean up:
 rm -rfv restore/ penpot.pg_dump
