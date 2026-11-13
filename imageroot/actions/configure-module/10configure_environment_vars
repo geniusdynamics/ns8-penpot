@@ -16,15 +16,16 @@ data = json.load(sys.stdin)
 
 HOST = data.get("host")
 # This is specific to you module, so you need to change it accordingly.
-PENPOT_SECRET_KEY = ""
-# GET PENPOT SECRET KEY FROM ENVIROMENT
-if os.path.exists("penpot-secret.env"):
-    dt = agent.read_envfile("penpot-secret.env")
-    PENPOT_SECRET_KEY = data.get("PENPOT_SECRET_KEY", "")
+# The backend reads PENPOT_SECRET_KEY from penpot-secret.env, written by
+# create-module: it is not repeated here.
 
 PENPOT_PREPL_HOST = "0.0.0.0"
 PENPOT_PUBLIC_URI = "https://" + HOST
-PENPOT_REDIS_URI = "redis://redis-app:6379/0"
+PENPOT_REDIS_URI = "redis://127.0.0.1:6379/0"
+# The containers share the pod network: reach them on 127.0.0.1. The
+# frontend nginx needs a DNS resolver to proxy to a host name.
+PENPOT_BACKEND_URI = "http://127.0.0.1:6060"
+PENPOT_EXPORTER_URI = "http://127.0.0.1:6061"
 # EMAIL SETTINGS
 rdb = agent.redis_connect(use_replica=True)
 smtp_settings = agent.get_smarthost_settings(rdb)
@@ -38,10 +39,11 @@ PENPOT_SMTP_PASSWORD = smtp_settings["password"]
 PENPOT_SMTP_TLS = "true" if smtp_settings["tls_verify"] else "false"
 
 penpot_config = {
-    "PENPOT_SECRET_KEY": PENPOT_SECRET_KEY,
     "PENPOT_PREPL_HOST": PENPOT_PREPL_HOST,
     "PENPOT_PUBLIC_URI": PENPOT_PUBLIC_URI,
     "PENPOT_REDIS_URI": PENPOT_REDIS_URI,
+    "PENPOT_BACKEND_URI": PENPOT_BACKEND_URI,
+    "PENPOT_EXPORTER_URI": PENPOT_EXPORTER_URI,
     "PENPOT_SMTP_DEFAULT_FROM": PENPOT_SMTP_DEFAULT_FROM,
     "PENPOT_SMTP_DEFAULT_REPLY_TO": PENPOT_SMTP_DEFAULT_REPLY_TO,
     "PENPOT_SMTP_HOST": PENPOT_SMTP_HOST,
@@ -51,5 +53,6 @@ penpot_config = {
     "PENPOT_SMTP_TLS": PENPOT_SMTP_TLS,
 }
 agent.write_envfile("penpot.env", penpot_config)
+os.chmod("penpot.env", 0o600)  # holds the SMTP password
 # just before starting systemd unit
 # agent.dump_env()
