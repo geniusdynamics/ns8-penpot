@@ -17,7 +17,8 @@ reponame="penpot"
 # Node.js 25+ no longer ships Corepack, install it from npm
 # renovate: datasource=npm packageName=corepack
 corepack_version=0.36.0
-penpot_version="2.12.1"
+# renovate: datasource=docker packageName=docker.io/penpotapp/frontend
+penpot_version=2.12.1
 # Create a new empty container image
 container=$(buildah from scratch)
 
@@ -49,6 +50,7 @@ buildah config --entrypoint=/ \
 	--label="org.nethserver.authorizations=traefik@node:routeadm" \
 	--label="org.nethserver.tcp-ports-demand=1" \
 	--label="org.nethserver.rootfull=0" \
+    --label="org.nethserver.min-core=3.0.0" \
 	--label="org.nethserver.images=docker.io/postgres:15.20 docker.io/redis:7.4.12 docker.io/penpotapp/frontend:$penpot_version docker.io/penpotapp/backend:$penpot_version  docker.io/penpotapp/exporter:$penpot_version" \
 	"${container}"
 # Commit the image
