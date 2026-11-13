@@ -1,9 +1,13 @@
 {
   "name": "penpot",
   "description": {
-    "en": "My penpot module"
+    "en": "Penpot is an open source design and prototyping tool that designers and developers use together in the browser.",
+    "it": "Penpot è uno strumento open source di progettazione e prototipazione usato insieme da designer e sviluppatori nel browser."
   },
-  "categories": [],
+  "categories": [
+    "development",
+    "multimedia"
+  ],
   "authors": [
     {
       "name": "Name Surname",

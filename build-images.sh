@@ -14,14 +14,19 @@ images=()
 repobase="${REPOBASE:-ghcr.io/geniusdynamics}"
 # Configure the image name
 reponame="penpot"
-penpot_version="2.8.1"
+# Node.js 25+ no longer ships Corepack, install it from npm
+# renovate: datasource=npm packageName=corepack
+corepack_version=0.36.0
+# renovate: datasource=docker packageName=docker.io/penpotapp/frontend
+penpot_version=2.12.1
 # Create a new empty container image
 container=$(buildah from scratch)
 
 # Reuse existing nodebuilder-penpot container, to speed up builds
 if ! buildah containers --format "{{.ContainerName}}" | grep -q nodebuilder-penpot; then
 	echo "Pulling NodeJS runtime..."
-	buildah from --name nodebuilder-penpot -v "${PWD}:/usr/src:Z" docker.io/library/node:lts
+	buildah from --name nodebuilder-penpot -v "${PWD}:/usr/src:Z" docker.io/library/node:26.13.0-slim
+	buildah run nodebuilder-penpot sh -c "npm install -g corepack@${corepack_version} && corepack enable"
 fi
 
 echo "Build static UI files with node..."
@@ -45,7 +50,8 @@ buildah config --entrypoint=/ \
 	--label="org.nethserver.authorizations=traefik@node:routeadm" \
 	--label="org.nethserver.tcp-ports-demand=1" \
 	--label="org.nethserver.rootfull=0" \
-	--label="org.nethserver.images=docker.io/postgres:15 docker.io/redis:7 docker.io/penpotapp/frontend:$penpot_version docker.io/penpotapp/backend:$penpot_version  docker.io/penpotapp/exporter:$penpot_version" \
+    --label="org.nethserver.min-core=3.0.0" \
+	--label="org.nethserver.images=docker.io/postgres:15.20 docker.io/redis:7.4.12 docker.io/penpotapp/frontend:$penpot_version docker.io/penpotapp/backend:$penpot_version  docker.io/penpotapp/exporter:$penpot_version" \
 	"${container}"
 # Commit the image
 buildah commit "${container}" "${repobase}/${reponame}"
