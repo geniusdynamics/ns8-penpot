@@ -17,7 +17,8 @@ reponame="penpot"
 # Node.js 25+ no longer ships Corepack, install it from npm
 # renovate: datasource=npm packageName=corepack
 corepack_version=0.36.0
-penpot_version="2.12.1"
+# renovate: datasource=docker packageName=docker.io/penpotapp/frontend
+penpot_version=2.12.1
 # Create a new empty container image
 container=$(buildah from scratch)
 
