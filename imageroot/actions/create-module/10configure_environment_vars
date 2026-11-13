@@ -33,6 +33,7 @@ postgres_config = {
     "POSTGRES_PASSWORD": POSTGRES_PASSWORD,
 }
 agent.write_envfile("database.env", postgres_config)
+os.chmod("database.env", 0o600)
 
 penpot_database = {
     "PENPOT_DATABASE_URI": f"postgresql://postgresql-app:5432/{POSTGRES_DB}",
@@ -40,8 +41,10 @@ penpot_database = {
     "PENPOT_DATABASE_PASSWORD": POSTGRES_PASSWORD,
 }
 agent.write_envfile("penpot-database.env", penpot_database)
+os.chmod("penpot-database.env", 0o600)
 
 PENPOT_SECRET_KEY = secrets.token_urlsafe(64)
 agent.write_envfile("penpot-secret.env", {"PENPOT_SECRET_KEY": PENPOT_SECRET_KEY})
+os.chmod("penpot-secret.env", 0o600)
 # just before starting systemd unit
 agent.dump_env()
